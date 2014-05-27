@@ -28,6 +28,7 @@ def gradAscent(dataMatIn, classLabels):
         h = sigmoid(dataMatrix*weights)     #matrix mult
         error = (labelMat - h)              #vector subtraction
         weights = weights + alpha * dataMatrix.transpose()* error #matrix mult
+        # print weights
     return weights
 
 def plotBestFit(weights):
@@ -52,6 +53,28 @@ def plotBestFit(weights):
     plt.xlabel('X1'); plt.ylabel('X2');
     plt.show()
 
+''' added by JGD
+    for display change line of [w0,w1,w2]
+'''
+def stocGradAscent0_0(dataMatrix, classLabels):
+    m,n = shape(dataMatrix)
+    alpha = 0.01
+    weights = ones(n)   #initialize to all ones
+    l_w0 = []
+    l_w1 = []
+    l_w2 = []
+    
+    for j in range(200):
+        for i in range(m):
+            h = sigmoid(sum(dataMatrix[i]*weights))
+            error = classLabels[i] - h
+            weights = weights + alpha * error * dataMatrix[i]
+            l_w0.append(weights[0])
+            l_w1.append(weights[1])
+            l_w2.append(weights[2])
+            
+    return weights, l_w2
+
 def stocGradAscent0(dataMatrix, classLabels):
     m,n = shape(dataMatrix)
     alpha = 0.01
@@ -62,6 +85,29 @@ def stocGradAscent0(dataMatrix, classLabels):
         weights = weights + alpha * error * dataMatrix[i]
     return weights
 
+''' added by JGD
+    for display change line of [w0,w1,w2]
+'''
+def stocGradAscent1_0(dataMatrix, classLabels, numIter=150):
+    m,n = shape(dataMatrix)
+    weights = ones(n)   #initialize to all ones
+    l_w0 = []
+    l_w1 = []
+    l_w2 = []
+    for j in range(numIter):
+        dataIndex = range(m)
+        for i in range(m):
+            alpha = 4/(1.0+j+i)+0.0001    #apha decreases with iteration, does not 
+            randIndex = int(random.uniform(0,len(dataIndex)))#go to 0 because of the constant
+            h = sigmoid(sum(dataMatrix[randIndex]*weights))
+            error = classLabels[randIndex] - h
+            weights = weights + alpha * error * dataMatrix[randIndex]
+            del(dataIndex[randIndex])
+            l_w0.append(weights[0])
+            l_w1.append(weights[1])
+            l_w2.append(weights[2])
+    return weights, l_w0, l_w1, l_w2
+    
 def stocGradAscent1(dataMatrix, classLabels, numIter=150):
     m,n = shape(dataMatrix)
     weights = ones(n)   #initialize to all ones
@@ -80,6 +126,41 @@ def classifyVector(inX, weights):
     prob = sigmoid(sum(inX*weights))
     if prob > 0.5: return 1.0
     else: return 0.0
+
+def colicTest_0():
+    frTrain = open('horseColicTraining.txt'); frTest = open('horseColicTest.txt')
+    trainingSet = []; trainingLabels = []
+    for line in frTrain.readlines():
+        currLine = line.strip().split('\t')
+        lineArr =[]
+        for i in range(21):
+            lineArr.append(float(currLine[i]))
+        trainingSet.append(lineArr)
+        trainingLabels.append(float(currLine[21]))
+    trainWeights, l_w0, l_w1, l_w2 = stocGradAscent1_0(array(trainingSet), trainingLabels, 1000)
+    
+    print trainWeights
+
+    import matplotlib.pyplot as plt
+    x = range(len(l_w0))
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(x, array(l_w1))
+    plt.show()
+
+
+    errorCount = 0; numTestVec = 0.0
+    for line in frTest.readlines():
+        numTestVec += 1.0
+        currLine = line.strip().split('\t')
+        lineArr =[]
+        for i in range(21):
+            lineArr.append(float(currLine[i]))
+        if int(classifyVector(array(lineArr), trainWeights))!= int(currLine[21]):
+            errorCount += 1
+    errorRate = (float(errorCount)/numTestVec)
+    print "the error rate of this test is: %f" % errorRate
+    return errorRate
 
 def colicTest():
     frTrain = open('horseColicTraining.txt'); frTest = open('horseColicTest.txt')
