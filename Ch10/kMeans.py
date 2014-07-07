@@ -9,13 +9,18 @@ def loadDataSet(fileName):      #general function to parse tab -delimited floats
     dataMat = []                #assume last column is target value
     fr = open(fileName)
     for line in fr.readlines():
-        curLine = line.strip().split('\t')
+        curLine = line.strip().split(' ')
         fltLine = map(float,curLine) #map all elements to float()
+        # fltLine.pop()
+        # fltLine.pop()
         dataMat.append(fltLine)
     return dataMat
 
 def distEclud(vecA, vecB):
-    return sqrt(sum(power(vecA - vecB, 2))) #la.norm(vecA-vecB)
+    return sqrt(sum(power(vecA - vecB, 2)))/(sqrt(sum(power(vecA, 2)))) #la.norm(vecA-vecB)
+
+def distPear(vecA, vecB):
+    return 0
 
 def randCent(dataSet, k):
     n = shape(dataSet)[1]
@@ -42,9 +47,11 @@ def kMeans(dataSet, k, distMeas=distEclud, createCent=randCent):
                     minDist = distJI; minIndex = j
             if clusterAssment[i,0] != minIndex: clusterChanged = True
             clusterAssment[i,:] = minIndex,minDist**2
-        print centroids
+        # print "centroids"
+        # print centroids
         for cent in range(k):#recalculate centroids
             ptsInClust = dataSet[nonzero(clusterAssment[:,0].A==cent)[0]]#get all the point in this cluster
+            # print ptsInClust
             centroids[cent,:] = mean(ptsInClust, axis=0) #assign centroid to mean 
     return centroids, clusterAssment
 
